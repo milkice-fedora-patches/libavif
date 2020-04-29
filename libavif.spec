@@ -1,7 +1,7 @@
 %bcond_with aom
 
 Name:           libavif
-Version:        0.5.7
+Version:        0.7.1
 Release:        1%{?dist}
 Summary:        Library for encoding and decoding .avif files
 License:        BSD
@@ -86,6 +86,9 @@ popd
 %{_bindir}/avifenc
 
 %changelog
+* Wed Apr 29 2020 Andreas Schneider <asn@redhat.com> - 0.7.1-1
+- Update to version 0.7.1
+
 * Wed Mar 04 2020 Andreas Schneider <asn@redhat.com> - 0.5.7-1
 - Update to version 0.5.7
 

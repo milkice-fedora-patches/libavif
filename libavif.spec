@@ -1,7 +1,7 @@
 %bcond_with aom
 
 Name:           libavif
-Version:        0.7.1
+Version:        0.7.2
 Release:        1%{?dist}
 Summary:        Library for encoding and decoding .avif files
 License:        BSD
@@ -9,6 +9,11 @@ Group:          Development/Libraries/C and C++
 Url:            https://github.com/AOMediaCodec/libavif
 
 Source0:        https://github.com/AOMediaCodec/libavif/archive/v%{version}/%{name}-%{version}.tar.gz
+
+Patch0:         e4e5d752ece581d6ef9fbb8bab0ab2edfde13fc5.patch
+Patch1:         ebb29b37711c749681278f8b778f0e6c031c4ca2.patch
+# https://github.com/AOMediaCodec/libavif/pull/155
+Patch2:         155.patch
 
 BuildRequires:  cmake
 BuildRequires:  gcc-c++
@@ -89,6 +94,10 @@ popd
 %{_bindir}/avifenc
 
 %changelog
+* Wed Apr 29 2020 Andreas Schneider <asn@redhat.com> - 0.7.2-1
+- Update to version 0.7.2
+  * https://github.com/AOMediaCodec/libavif/blob/master/CHANGELOG.md
+
 * Wed Apr 29 2020 Andreas Schneider <asn@redhat.com> - 0.7.1-1
 - Update to version 0.7.1
 

@@ -1,0 +1,23 @@
+From 84232e2d786967e1ce9aec668f0d31568e83f72c Mon Sep 17 00:00:00 2001
+From: Andreas Schneider <asn@cryptomilk.org>
+Date: Wed, 29 Apr 2020 17:34:57 +0200
+Subject: [PATCH] apps: Use correct enum for colourPrimaries
+
+Signed-off-by: Andreas Schneider <asn@cryptomilk.org>
+---
+ apps/avifenc.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/apps/avifenc.c b/apps/avifenc.c
+index 11595b7..e812670 100644
+--- a/apps/avifenc.c
++++ b/apps/avifenc.c
+@@ -352,7 +352,7 @@ int main(int argc, char * argv[])
+     if (lossless && (inputFormat != AVIF_APP_FILE_FORMAT_Y4M)) {
+         if (!nclxSet) { // don't stomp on the user's cmdline nclx values
+             // Assume SRGB unless they tell us otherwise via --nclx
+-            nclx.colourPrimaries = AVIF_NCLX_TRANSFER_CHARACTERISTICS_BT709;
++            nclx.colourPrimaries = AVIF_NCLX_COLOUR_PRIMARIES_BT709;
+             nclx.transferCharacteristics = AVIF_NCLX_TRANSFER_CHARACTERISTICS_SRGB;
+             nclx.matrixCoefficients = AVIF_NCLX_MATRIX_COEFFICIENTS_IDENTITY; // this is key for lossless
+             nclx.range = AVIF_RANGE_FULL;

@@ -1,0 +1,150 @@
+From ebb29b37711c749681278f8b778f0e6c031c4ca2 Mon Sep 17 00:00:00 2001
+From: Wan-Teh Chang <wtc@google.com>
+Date: Mon, 27 Apr 2020 18:43:51 -0700
+Subject: [PATCH] Do not ignore GCC's -Wclobbered warning
+
+The C Standard requires certain local variables in the function calling
+setjmp be declared as volatile. I went through the code and declare
+variables as volatile according to the C Standard, except for the 'rgb'
+struct variable. Document my rationale.
+---
+ apps/shared/avifjpeg.c | 44 ++++++++++++++++++++++++++----------------
+ apps/shared/avifpng.c  | 25 ++++++++++++++++--------
+ 2 files changed, 44 insertions(+), 25 deletions(-)
+
+diff --git a/apps/shared/avifjpeg.c b/apps/shared/avifjpeg.c
+index 39bd0cd..5e68211 100644
+--- a/apps/shared/avifjpeg.c
++++ b/apps/shared/avifjpeg.c
+@@ -12,11 +12,6 @@
+ 
+ #include "iccjpeg.h"
+ 
+-// This warning triggers false postives way too often in here.
+-#if defined(__GNUC__) && !defined(__clang__)
+-#pragma GCC diagnostic ignored "-Wclobbered"
+-#endif
+-
+ struct my_error_mgr
+ {
+     struct jpeg_error_mgr pub;
+@@ -30,31 +25,44 @@ static void my_error_exit(j_common_ptr cinfo)
+     longjmp(myerr->setjmp_buffer, 1);
+ }
+ 
++// Note on setjmp() and volatile variables:
++//
++// K & R, The C Programming Language 2nd Ed, p. 254 says:
++//   ... Accessible objects have the values they had when longjmp was called,
++//   except that non-volatile automatic variables in the function calling setjmp
++//   become undefined if they were changed after the setjmp call.
++//
++// Therefore, 'iccData' is declared as volatile. 'rgb' should be declared as
++// volatile, but doing so would be inconvenient (try it) and since it is a
++// struct, the compiler is unlikely to put it in a register. 'ret' does not need
++// to be declared as volatile because it is not modified between setjmp and
++// longjmp. But GCC's -Wclobbered warning may have trouble figuring that out, so
++// we preemptively declare it as volatile.
++
+ avifBool avifJPEGRead(avifImage * avif, const char * inputFilename, avifPixelFormat requestedFormat, uint32_t requestedDepth)
+ {
+-    avifBool ret = AVIF_FALSE;
+-    FILE * f = NULL;
+-    uint8_t * iccData = NULL;
++    volatile avifBool ret = AVIF_FALSE;
++    uint8_t * volatile iccData = NULL;
+ 
+     avifRGBImage rgb;
+     memset(&rgb, 0, sizeof(avifRGBImage));
+ 
++    FILE * f = fopen(inputFilename, "rb");
++    if (!f) {
++        fprintf(stderr, "Can't open JPEG file for read: %s\n", inputFilename);
++        goto cleanup;
++    }
++
+     struct my_error_mgr jerr;
+     struct jpeg_decompress_struct cinfo;
+     cinfo.err = jpeg_std_error(&jerr.pub);
+     jerr.pub.error_exit = my_error_exit;
+     if (setjmp(jerr.setjmp_buffer)) {
+-        return AVIF_FALSE;
++        goto cleanup;
+     }
+ 
+     jpeg_create_decompress(&cinfo);
+ 
+-    f = fopen(inputFilename, "rb");
+-    if (!f) {
+-        fprintf(stderr, "Can't open JPEG file for read: %s\n", inputFilename);
+-        goto cleanup;
+-    }
+-
+     setup_read_icc_profile(&cinfo);
+     jpeg_stdio_src(&cinfo, f);
+     jpeg_read_header(&cinfo, TRUE);
+@@ -63,10 +71,12 @@ avifBool avifJPEGRead(avifImage * avif, const char * inputFilename, avifPixelFor
+     int row_stride = cinfo.output_width * cinfo.output_components;
+     JSAMPARRAY buffer = (*cinfo.mem->alloc_sarray)((j_common_ptr)&cinfo, JPOOL_IMAGE, row_stride, 1);
+ 
++    uint8_t * iccDataTmp;
+     unsigned int iccDataLen;
+-    if (read_icc_profile(&cinfo, &iccData, &iccDataLen)) {
++    if (read_icc_profile(&cinfo, &iccDataTmp, &iccDataLen)) {
++        iccData = iccDataTmp;
+         if (avif->profileFormat == AVIF_PROFILE_FORMAT_NONE) {
+-            avifImageSetProfileICC(avif, iccData, (size_t)iccDataLen);
++            avifImageSetProfileICC(avif, iccDataTmp, (size_t)iccDataLen);
+         } else {
+             fprintf(stderr, "WARNING: JPEG contains ICC profile which is being overridden with --nclx\n");
+         }
+diff --git a/apps/shared/avifpng.c b/apps/shared/avifpng.c
+index 3573a46..934b5aa 100644
+--- a/apps/shared/avifpng.c
++++ b/apps/shared/avifpng.c
+@@ -9,17 +9,26 @@
+ #include <stdlib.h>
+ #include <string.h>
+ 
+-// This warning triggers false postives way too often in here.
+-#if defined(__GNUC__) && !defined(__clang__)
+-#pragma GCC diagnostic ignored "-Wclobbered"
+-#endif
++// Note on setjmp() and volatile variables:
++//
++// K & R, The C Programming Language 2nd Ed, p. 254 says:
++//   ... Accessible objects have the values they had when longjmp was called,
++//   except that non-volatile automatic variables in the function calling setjmp
++//   become undefined if they were changed after the setjmp call.
++//
++// Therefore, 'rowPointers' is declared as volatile. 'rgb' should be declared as
++// volatile, but doing so would be inconvenient (try it) and since it is a
++// struct, the compiler is unlikely to put it in a register. 'readResult' and
++// 'writeResult' do not need to be declared as volatile because they are not
++// modified between setjmp and longjmp. But GCC's -Wclobbered warning may have
++// trouble figuring that out, so we preemptively declare them as volatile.
+ 
+ avifBool avifPNGRead(avifImage * avif, const char * inputFilename, avifPixelFormat requestedFormat, uint32_t requestedDepth, uint32_t * outPNGDepth)
+ {
+-    avifBool readResult = AVIF_FALSE;
++    volatile avifBool readResult = AVIF_FALSE;
+     png_structp png = NULL;
+     png_infop info = NULL;
+-    png_bytep * rowPointers = NULL;
++    png_bytep * volatile rowPointers = NULL;
+ 
+     avifRGBImage rgb;
+     memset(&rgb, 0, sizeof(avifRGBImage));
+@@ -149,10 +158,10 @@ avifBool avifPNGRead(avifImage * avif, const char * inputFilename, avifPixelForm
+ 
+ avifBool avifPNGWrite(avifImage * avif, const char * outputFilename, uint32_t requestedDepth)
+ {
+-    avifBool writeResult = AVIF_FALSE;
++    volatile avifBool writeResult = AVIF_FALSE;
+     png_structp png = NULL;
+     png_infop info = NULL;
+-    png_bytep * rowPointers = NULL;
++    png_bytep * volatile rowPointers = NULL;
+ 
+     avifRGBImage rgb;
+     memset(&rgb, 0, sizeof(avifRGBImage));

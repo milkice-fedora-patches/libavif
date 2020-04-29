@@ -18,6 +18,8 @@ BuildRequires:  pkgconfig(dav1d)
 BuildRequires:  pkgconfig(aom)
 %endif
 BuildRequires:  pkgconfig(rav1e)
+BuildRequires:  pkgconfig(libpng)
+BuildRequires:  pkgconfig(zlib)
 
 %description
 This library aims to be a friendly, portable C implementation of the AV1 Image

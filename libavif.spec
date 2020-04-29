@@ -18,6 +18,7 @@ BuildRequires:  pkgconfig(dav1d)
 BuildRequires:  pkgconfig(aom)
 %endif
 BuildRequires:  pkgconfig(rav1e)
+BuildRequires:  pkgconfig(libjpeg)
 BuildRequires:  pkgconfig(libpng)
 BuildRequires:  pkgconfig(zlib)
 

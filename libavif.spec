@@ -2,7 +2,7 @@
 
 Name:           libavif
 Version:        0.7.3
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Library for encoding and decoding .avif files
 License:        BSD
 Url:            https://github.com/AOMediaCodec/libavif
@@ -84,6 +84,10 @@ popd
 %{_bindir}/avifenc
 
 %changelog
+* Sat Aug 01 2020 Fedora Release Engineering <releng@fedoraproject.org> - 0.7.3-3
+- Second attempt - Rebuilt for
+  https://fedoraproject.org/wiki/Fedora_33_Mass_Rebuild
+
 * Tue Jul 28 2020 Fedora Release Engineering <releng@fedoraproject.org> - 0.7.3-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_33_Mass_Rebuild
 

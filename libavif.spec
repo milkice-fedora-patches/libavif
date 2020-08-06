@@ -72,7 +72,7 @@ Avif-pixbuf-loader contains a plugin to load AVIF images in GTK+ applications.
 
 %files
 %license LICENSE
-%{_libdir}/libavif.so.5*
+%{_libdir}/libavif.so.6*
 
 %files devel
 %{_libdir}/libavif.so

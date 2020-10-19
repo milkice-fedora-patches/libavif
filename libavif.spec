@@ -3,14 +3,14 @@
 
 %bcond_without aom
 
-Name:       libavif
-Version:    0.8.1
-Release:    1%{?dist}
-Summary:    Library for encoding and decoding .avif files
+Name:           libavif
+Version:        0.8.2
+Release:        1%{?dist}
+Summary:        Library for encoding and decoding .avif files
 
-License:    BSD
-URL:        https://github.com/AOMediaCodec/libavif
-Source0:    %{url}/archive/v%{version}/%{name}-%{version}.tar.gz
+License:        BSD
+URL:            https://github.com/AOMediaCodec/libavif
+Source0:        %{url}/archive/v%{version}/%{name}-%{version}.tar.gz
 
 BuildRequires:  cmake
 BuildRequires:  gcc-c++
@@ -72,7 +72,7 @@ Avif-pixbuf-loader contains a plugin to load AVIF images in GTK+ applications.
 
 %files
 %license LICENSE
-%{_libdir}/libavif.so.6*
+%{_libdir}/libavif.so.*
 
 %files devel
 %{_libdir}/libavif.so
@@ -89,6 +89,10 @@ Avif-pixbuf-loader contains a plugin to load AVIF images in GTK+ applications.
 %{_libdir}/gdk-pixbuf-2.0/*/loaders/libpixbufloader-avif.so
 
 %changelog
+* Mon Oct 19 2020 Andreas Schneider <asn@redhat.com> - 0.8.2-1
+- Update to version 0.8.2
+  https://github.com/AOMediaCodec/libavif/blob/master/CHANGELOG.md
+
 * Thu Aug 06 22:14:02 CEST 2020 Robert-André Mauchin <zebob.m@gmail.com> - 0.8.1-1
 - Update to 0.8.1
 

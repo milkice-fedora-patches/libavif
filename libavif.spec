@@ -3,9 +3,15 @@
 
 %bcond_without aom
 
+%ifnarch riscv64
+%bcond_without rav1e
+%else
+%bcond_with rav1e
+%endif
+
 Name:           libavif
 Version:        0.8.2
-Release:        1%{?dist}
+Release:        1.0.riscv64%{?dist}
 Summary:        Library for encoding and decoding .avif files
 
 License:        BSD
@@ -21,7 +27,9 @@ BuildRequires:  pkgconfig(aom)
 BuildRequires:  pkgconfig(dav1d)
 BuildRequires:  pkgconfig(libjpeg)
 BuildRequires:  pkgconfig(libpng)
+%if %{with rav1e}
 BuildRequires:  pkgconfig(rav1e)
+%endif
 BuildRequires:  pkgconfig(zlib)
 
 %description
@@ -62,7 +70,7 @@ Avif-pixbuf-loader contains a plugin to load AVIF images in GTK+ applications.
 %build
 %cmake  %{?with_aom:-DAVIF_CODEC_AOM=1} \
         -DAVIF_CODEC_DAV1D=1 \
-        -DAVIF_CODEC_RAV1E=1 \
+        %{?with_rav1e:-DAVIF_CODEC_RAV1E=1} \
         -DAVIF_BUILD_APPS=1 \
         -DAVIF_BUILD_GDK_PIXBUF=1
 %cmake_build
@@ -89,6 +97,9 @@ Avif-pixbuf-loader contains a plugin to load AVIF images in GTK+ applications.
 %{_libdir}/gdk-pixbuf-2.0/*/loaders/libpixbufloader-avif.so
 
 %changelog
+* Fri Dec 04 2020 David Abdurachmanov <david.abdurachmanov@sifive.com> - 0.8.2-1.0.riscv64
+- Disable rav1e on riscv64 (we need to bootstrap rust-lang)
+
 * Mon Oct 19 2020 Andreas Schneider <asn@redhat.com> - 0.8.2-1
 - Update to version 0.8.2
   https://github.com/AOMediaCodec/libavif/blob/master/CHANGELOG.md
